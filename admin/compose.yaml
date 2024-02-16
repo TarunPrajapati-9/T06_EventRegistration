@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    ports:
+      - 3000:3000
+
+    develop:
+      watch:
+        - path: package.json
+          action: rebuild
+        - path: package.lock.json
+          action: rebuild
+        - path: next.config.js
+          action: rebuild
+        - path: prisma/schema.prisma
+          action: rebuild
+
+        - path: ./
+          target: ./event_app
+          action: sync
+
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - NEXT_PUBLIC_COOKIE_TOKEN_KEY=${NEXT_PUBLIC_COOKIE_TOKEN_KEY}
+      - NEXT_PUBLIC_BACKEND_URI=${NEXT_PUBLIC_BACKEND_URI}
+
+    env_file:
+      - path: ./.env
+        required: true
+
+volumes:
+  events_app:

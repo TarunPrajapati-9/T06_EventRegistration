@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Participant {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  p_name     String
+  p_email    String @unique
+  p_password String
+
+  Registration Registration[]
+
+  @@unique([p_name, p_email, p_password])
+}
+
+model Organizer {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  o_name     String @unique
+  o_email    String @unique
+  o_password String
+
+  Event Event[]
+
+  @@unique([id, o_name, o_email, o_password])
+}
+
+model Event {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  event_name        String
+  canvas_image      String
+  organizer_id      String
+  event_description String   @db.String
+  event_date        DateTime
+  reg_fees          Float
+  event_capacity    Int
+
+  organizer Organizer @relation(fields: [organizer_id], references: [id], onDelete: Cascade)
+
+  Registration Registration[]
+
+  @@unique([id, event_name, organizer_id])
+}
+
+model Registration {
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  event_id       String @db.ObjectId
+  participant_id String @db.ObjectId
+
+  event       Event       @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  participant Participant @relation(fields: [participant_id], references: [id], onDelete: Cascade)
+
+  @@unique([id, event_id, participant_id])
+}
+
+model Admin {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  a_name     String @unique
+  a_email    String @unique
+  a_password String
+}
